@@ -11,15 +11,14 @@ public class EmployeeDao {
 
 	public int registerEmployee(Employee employee) throws ClassNotFoundException {
 		String INSERT_USERS_SQL = "INSERT INTO employee"
-				+ "  (first_name, last_name, username, pswd, address, contact) VALUES "
-				+ " (?, ?, ?, ?,?,?);";
+				+ "  (first_name, last_name, username, pswd, address, contact) VALUES " + " (?, ?, ?, ?,?,?);";
 
 		int result = 0;
 
 		Class.forName("com.mysql.cj.jdbc.Driver");
 
-		try (Connection connection = DriverManager
-				.getConnection("jdbc:mysql://localhost:3306/jspdb?allowPublicKeyRetrieval=true&useSSL=false", "root", "root");
+		try (Connection connection = DriverManager.getConnection(
+				"jdbc:mysql://localhost:3306/jspdb?allowPublicKeyRetrieval=true&useSSL=false", "root", "root");
 
 				// Step 2:Create a statement using connection object
 				PreparedStatement preparedStatement = connection.prepareStatement(INSERT_USERS_SQL)) {

@@ -8,7 +8,7 @@ import lombok.Data;
 public class Employee implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private String firstName;
 	private String lastName;
 	private String username;
