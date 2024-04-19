@@ -24,7 +24,8 @@ public class StudentService implements GenericRepository<Student, Long> {
 			this.connection = DatabaseUtil.getConnection();
 		} catch (SQLException e) {
 			e.printStackTrace();
-			// Envía un mensaje a la consola cuando detecta este tipo de error (Si, en español)
+			// Envía un mensaje a la consola cuando detecta este tipo de error (Si, en
+			// español)
 			throw new RuntimeException("Falló al inicializar la conexión con la base de datos", e);
 		}
 	}
@@ -32,18 +33,27 @@ public class StudentService implements GenericRepository<Student, Long> {
 	// Lista todos los registros
 	@Override
 	public List<Student> findALL() {
-		// Inicia la lista
 		List<Student> entities = new ArrayList<>();
-		// Prepara la conexión y ejecuta la sentencia
-		try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM student")) {
-			// Crea la lista de estudiantes traída de la base de datos
+
+		try (Connection connection = DatabaseUtil.getConnection(); PreparedStatement stmt = connection.prepareStatement("SELECT * FROM student"); ResultSet rs = stmt.executeQuery()) {
 			while (rs.next()) {
 				Student entity = new Student();
+				entity.setIdentificador(rs.getLong("identificador"));
+				entity.setNombres(rs.getString("nombres"));
+				entity.setApellidos(rs.getString("apellidos"));
+				entity.setDni(rs.getString("dni"));
+				entity.setCelular(rs.getString("celular"));
+				entity.setEmail(rs.getString("email"));
+				entity.setContrasena(rs.getString("contrasena"));
 				entities.add(entity);
 			}
-		} catch (Exception e) {
+			rs.close();
+			stmt.close();
+		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new RuntimeException("Falló al inicializar la conexión con la base de datos", e);
+			throw new RuntimeException("Failed to fetch data from the database", e);
+		} finally {
+			DatabaseUtil.closeConnection(connection);
 		}
 		return entities;
 	}
@@ -56,12 +66,17 @@ public class StudentService implements GenericRepository<Student, Long> {
 		try (PreparedStatement stmt = connection.prepareStatement("SELECT * FROM student WHERE identificador = ?")) {
 			// Envía el parámetro (el identificador en este caso)
 			stmt.setLong(1, id);
-			try (ResultSet rs = stmt.executeQuery()) {
+			ResultSet rs = stmt.executeQuery();
+			if (rs.next()) {
 				entity = createStudentFromResultSet(rs);
 			}
+			rs.close();
+			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new RuntimeException("Falló al inicializar la conexión con la base de datos", e);
+		} finally {
+			DatabaseUtil.closeConnection(connection);
 		}
 		return entity;
 	}
@@ -78,15 +93,20 @@ public class StudentService implements GenericRepository<Student, Long> {
 			stmt.setString(5, entity.getEmail());
 			stmt.setString(6, entity.getContrasena());
 			int affectedRows = stmt.executeUpdate();
+			ResultSet generatedKeys = stmt.getGeneratedKeys();
 			if (affectedRows == 1) {
-				ResultSet generatedKeys = stmt.getGeneratedKeys();
 				if (generatedKeys.next()) {
 					entity.setIdentificador(generatedKeys.getLong(1));
 				}
+				generatedKeys.close();
 			}
+			generatedKeys.close();
+			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new RuntimeException("Falló al inicializar la conexión con la base de datos", e);
+		} finally {
+			DatabaseUtil.closeConnection(connection);
 		}
 		return entity;
 	}
@@ -97,9 +117,12 @@ public class StudentService implements GenericRepository<Student, Long> {
 		try (PreparedStatement stmt = connection.prepareStatement(sql)) {
 			stmt.setLong(1, id);
 			stmt.executeUpdate();
+			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new RuntimeException("Falló al inicializar la conexión con la base de datos", e);
+		} finally {
+			DatabaseUtil.closeConnection(connection);
 		}
 	}
 

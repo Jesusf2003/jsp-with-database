@@ -2,7 +2,9 @@ package com.personal.jspdb.controller;
 
 import java.io.IOException;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -10,7 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.personal.jspdb.model.Student;
 import com.personal.jspdb.service.StudentService;
 
-public class StudentServlets extends HttpServlet {
+@WebServlet("/register")
+public class StudentRegisterServlets extends HttpServlet {
 	
 	private StudentService service;
 	
@@ -22,18 +25,19 @@ public class StudentServlets extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		Student entity = new Student();
-		entity.setNombres(req.getParameter("firstName"));
-		entity.setApellidos(req.getParameter("lastName"));
-		entity.setDni(req.getParameter("documentDNI"));
-		entity.setCelular(req.getParameter("celphone"));
-		entity.setEmail(req.getParameter("email"));
-		entity.setContrasena(req.getParameter("password"));
+		Student student = new Student();
+		student.setNombres(req.getParameter("firstName"));
+		student.setApellidos(req.getParameter("lastName"));
+		student.setDni(req.getParameter("documentDNI"));
+		student.setCelular(req.getParameter("celphone"));
+		student.setEmail(req.getParameter("email"));
+		student.setContrasena(req.getParameter("password"));
 		try {
-			service.save(entity);
+			service.save(student);
 			resp.sendRedirect("congratulations.jsp");
 		} catch (Exception e) {
 			e.printStackTrace();
+			resp.getWriter().println("Error ocurred while registering student");
 		}
 	}
 }
