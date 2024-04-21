@@ -1,0 +1,30 @@
+@charset "ISO-8859-1";
+
+*, *::after, *::before {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	height: 100vh;
+	background-color: #002C44;
+}
+
+.logo{
+	padding: 20px;
+}
+
+.card-extended {
+	width: 110%; /* Cambia este valor según sea necesario */
+	max-width: none;
+}
+
+.btn-custom {
+	background-color: #2C7865;
+	border-color: #2C7865;
+}
+
+.btn-custom:hover {
+	background-color: #245e4f;
+	border-color: #245e4f;
+}
