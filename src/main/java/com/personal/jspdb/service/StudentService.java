@@ -62,9 +62,8 @@ public class StudentService implements GenericRepository<Student, Long> {
 	@Override
 	public Student findById(Long id) {
 		Student entity = null;
-		// Prepara la conexión y ejecuta la sentencia
-		try (PreparedStatement stmt = connection.prepareStatement("SELECT * FROM student WHERE identificador = ?")) {
-			// Envía el parámetro (el identificador en este caso)
+		try (Connection connection = DatabaseUtil.getConnection();
+			 PreparedStatement stmt = connection.prepareStatement("SELECT * FROM student WHERE identificador = ?")) {
 			stmt.setLong(1, id);
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
@@ -74,12 +73,11 @@ public class StudentService implements GenericRepository<Student, Long> {
 			stmt.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new RuntimeException("Falló al inicializar la conexión con la base de datos", e);
-		} finally {
-			DatabaseUtil.closeConnection(connection);
+			throw new RuntimeException("Falló al ejecutar la consulta en la base de datos", e);
 		}
 		return entity;
 	}
+
 
 	// Registra un nuevo estudiante
 	@Override
@@ -110,21 +108,48 @@ public class StudentService implements GenericRepository<Student, Long> {
 		}
 		return entity;
 	}
-
+	// Actualiza un estudiante existente
 	@Override
-	public void deleteById(Long id) {
-		String sql = "DELETE FROM student WHERE identificador = ?";
-		try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-			stmt.setLong(1, id);
-			stmt.executeUpdate();
-			stmt.close();
+	public Student update(Student entity) {
+		String sql = "UPDATE student SET nombres=?, apellidos=?, dni=?, celular=?, email=?, contrasena=? WHERE identificador=?";
+
+		try (Connection conn = DatabaseUtil.getConnection();
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+			stmt.setString(1, entity.getNombres());
+			stmt.setString(2, entity.getApellidos());
+			stmt.setString(3, entity.getDni());
+			stmt.setString(4, entity.getCelular());
+			stmt.setString(5, entity.getEmail());
+			stmt.setString(6, entity.getContrasena());
+			stmt.setLong(7, entity.getIdentificador());
+
+			int affectedRows = stmt.executeUpdate();
+			if (affectedRows == 0) {
+				throw new RuntimeException("No se pudo actualizar el estudiante, no se encontró el ID: " + entity.getIdentificador());
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new RuntimeException("Falló al inicializar la conexión con la base de datos", e);
-		} finally {
-			DatabaseUtil.closeConnection(connection);
+		}
+		return entity;
+	}
+
+
+
+	@Override
+	public void deleteById(Long id) {
+		try (Connection connection = DatabaseUtil.getConnection();
+			 PreparedStatement stmt = connection.prepareStatement("DELETE FROM student WHERE identificador = ?")) {
+			stmt.setLong(1, id);
+			stmt.executeUpdate();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Error al eliminar el estudiante", e);
 		}
 	}
+
 
 	// Mejor forma sugerida para mapear el objeto para ResultSet
 	private Student createStudentFromResultSet(ResultSet rs) throws SQLException {
