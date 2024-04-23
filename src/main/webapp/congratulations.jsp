@@ -37,7 +37,7 @@
     });
 
     function fetchStudents() {
-        fetch('/Main/list')
+        fetch('/JSPDB/list')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`Error HTTP! Estado: ${response.status}`);
@@ -71,12 +71,11 @@
             detalleTabla += "</tr>";
             tableBody.innerHTML += detalleTabla;
         });
-        console.log('Tabla actualizada exitosamente');
     }
 
     function deleteStudent(studentId) {
         if (confirm("¿Estás seguro de que quieres eliminar este estudiante?")) {
-            fetch('/Main/delete?id=' + studentId, {method: 'DELETE'})
+            fetch('/JSPDB/delete?id=' + studentId, {method: 'DELETE'})
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`Error HTTP! Estado: ${response.status}`);

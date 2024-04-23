@@ -9,7 +9,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="editForm" action="/Main/edit" method="post">
+                <form id="editForm" action="/JSPDB/edit" method="post">
                     <input type="hidden" id="editId" name="id">
                     <div class="mb-3">
                         <label for="editName" class="form-label">Nombres:</label>
