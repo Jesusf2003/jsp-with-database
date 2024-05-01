@@ -31,6 +31,7 @@ public class StudentListServlets extends HttpServlet {
 			Gson json = new Gson();
 			String list = json.toJson(service.findALL());
 			resp.setContentType("application/json");
+			resp.setCharacterEncoding("UTF-8");
 			resp.getWriter().write(list);
 			resp.getWriter().close();
 		} catch (Exception e) {
