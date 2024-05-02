@@ -1,25 +1,20 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Lab05 | Insertion of data</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insertar datos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.5/css/dataTables.dataTables.css" />
+
 </head>
 <body>
-<div class="container d-flex align-items-center justify-content-center">
+<div class="container">
+    <h1 class="mt-5 mb-4">Lista de Estudiantes</h1>
     <table id="studentTable" class="table">
         <thead>
-        <tr>
-            <th scope="col">Nombres</th>
-            <th scope="col">Apellidos</th>
-            <th scope="col">DNI</th>
-            <th scope="col">Celular</th>
-            <th scope="col">Correo electrónico</th>
-            <th scope="col">Contraseña</th>
-            <th scope="col">Acciones</th>
-        </tr>
         </thead>
         <tbody id="studentTableBody">
         </tbody>
@@ -27,9 +22,11 @@
 </div>
 
 <%@include file="edit.jsp" %>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.5/js/dataTables.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-
     let STUDENTS;
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -47,6 +44,7 @@
             .then(data => {
                 STUDENTS = data;
                 renderStudents(STUDENTS);
+                initDataTable();
             })
             .catch(error => {
                 console.error('Error al obtener datos:', error);
@@ -65,8 +63,8 @@
             detalleTabla += "<td>" + student.email + "</td>";
             detalleTabla += "<td>" + student.contrasena + "</td>";
             detalleTabla += "<td>";
-            detalleTabla += "<a href='javascript:void(0);' onclick='openEditModal(" + student.identificador + ");'>Editar</a> ";
-            detalleTabla += "<a href='javascript:void(0);' onclick='deleteStudent(" + student.identificador + ");'>Eliminar</a>";
+            detalleTabla += "<a href='javascript:void(0);' class='btn btn-primary btn-sm' onclick='openEditModal(" + student.identificador + ");'>Editar</a> ";
+            detalleTabla += "<a href='javascript:void(0);' class='btn btn-danger btn-sm' onclick='deleteStudent(" + student.identificador + ");'>Eliminar</a>";
             detalleTabla += "</td>";
             detalleTabla += "</tr>";
             tableBody.innerHTML += detalleTabla;
@@ -92,7 +90,6 @@
         }
     }
 
-
     function openEditModal(studentId) {
         const student = STUDENTS.find(s => s.identificador === studentId);
         if (student) {
@@ -113,8 +110,25 @@
         }
     }
 
+    function initDataTable() {
+        $('#studentTable').DataTable({
+            paging: true,
+            searching: true,
+            pageLength: 10,
+            language: {
+                url: 'https://cdn.datatables.net/plug-ins/1.12.1/i18n/es-ES.json'
+            },
+            columns: [
+                { title: "Nombres" },
+                { title: "Apellidos" },
+                { title: "DNI" },
+                { title: "Celular" },
+                { title: "Correo electrónico" },
+                { title: "Contraseña" },
+                { title: "Acciones" }
+            ]
+        });
+    }
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
