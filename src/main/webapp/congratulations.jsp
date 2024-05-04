@@ -1,134 +1,209 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insertar datos</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.5/css/dataTables.dataTables.css" />
-
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>DataTables estilo Bootstrap 5 - JSP</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/dataTables.bootstrap5.min.css">
+    <style>
+        table.dataTable thead {
+            background-color: #0d6efd;
+            color: aliceblue;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-    <h1 class="mt-5 mb-4">Lista de Estudiantes</h1>
-    <table id="studentTable" class="table">
-        <thead>
-        </thead>
-        <tbody id="studentTableBody">
-        </tbody>
-    </table>
+<div class="container justify-content-center align-items-center p-4">
+    <div class="mx-auto">
+        <h2 class="text-start mb-4 font-weight-bold">GESTIÓN DE ESTUDIANTES</h2>
+        <div class="shadow p-3 mb-3 bg-white rounded">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button id="btnCrear" class="btn bg-primary text-white">Registrar Estudiante</button>
+                        <div>
+                            <select id="careerFilter" class="form-control w-auto">
+                                <option value="">-- Listar todas las Carreras --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="shadow p-3 mb-2 bg-white rounded">
+            <table id="tablaEstudiantes" class="flex table table-striped table-bordered">
+                <thead>
+                <tr>
+                    <th>Nombres</th>
+                    <th>Apellidos</th>
+                    <th>DNI</th>
+                    <th>Celular</th>
+                    <th>Email</th>
+                    <th>Carrera</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Aquí irán los datos de los estudiantes -->
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
-
-<%@include file="edit.jsp" %>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.datatables.net/2.0.5/js/dataTables.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+<%@include file="form.jsp" %>
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" ></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.0.2/dist/sweetalert2.all.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap5.min.js"></script>
 <script>
-    let STUDENTS;
 
-    document.addEventListener('DOMContentLoaded', function () {
-        fetchStudents();
+    // Definición de constantes
+    const APP_CONTEXT = '/JSPDB';
+    const GET_STUDENT_URL = APP_CONTEXT + '/list/students';
+    const GET_CAREER_URL = APP_CONTEXT + '/list/careers';
+    const DELETE_STUDENT_URL = APP_CONTEXT + '/delete/student';
+    const SAVE_STUDENT_URL = APP_CONTEXT + '/register/student';
+    const EDIT_STUDENT_URL = APP_CONTEXT + '/edit/student';
+
+    // Inicialización de DataTable
+    let studentsTable = $('#tablaEstudiantes').DataTable({
+        "ajax":{
+            "url": GET_STUDENT_URL,
+            "dataSrc":""
+        },
+        "columns":[
+            {"data":"nombres"},
+            {"data":"apellidos"},
+            {"data":"dni"},
+            {"data":"celular"},
+            {"data":"email"},
+            {"data":"career.nombre"},
+            {"defaultContent":
+                    "<button class='btn text-white bg-primary btn-sm btnEditar '>Editar</button>" +
+                    "<button class='btn text-white btn-danger btn-sm btnBorrar ml-2'>Eliminar</button>"
+            }
+        ],
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.12.1/i18n/es-ES.json'
+        },
     });
 
-    function fetchStudents() {
-        fetch('/JSPDB/list')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error HTTP! Estado: ${response.status}`);
+    // Funciones auxiliares
+    function fillCareerSelect(careerSelected) {
+        $('#carrera').empty().append('<option value="" disabled selected>Seleccione una carrera</option>');
+        $('#careerFilter').empty().append('<option value="">-- Listar todas las Carreras --</option>');
+        $.getJSON(GET_CAREER_URL, function(data) {
+            $.each(data, function(key, val) {
+                let option = '<option value="' + val.codigo + '">' + val.nombre + '</option>';
+                if (val.nombre === careerSelected) {
+                    $('#carrera').append('<option value="' + val.codigo + '" selected>' + val.nombre + '</option>');
+                } else {
+                    $('#carrera').append(option);
+                    $('#careerFilter').append(option);
                 }
-                return response.json();
-            })
-            .then(data => {
-                STUDENTS = data;
-                renderStudents(STUDENTS);
-                initDataTable();
-            })
-            .catch(error => {
-                console.error('Error al obtener datos:', error);
             });
-    }
-
-    function renderStudents(studentsData) {
-        const tableBody = document.getElementById('studentTableBody');
-        tableBody.innerHTML = '';
-        studentsData.forEach(function (student) {
-            let detalleTabla = "<tr id='studentRow" + student.identificador + "'>";
-            detalleTabla += "<td>" + student.nombres + "</td>";
-            detalleTabla += "<td>" + student.apellidos + "</td>";
-            detalleTabla += "<td>" + student.dni + "</td>";
-            detalleTabla += "<td>" + student.celular + "</td>";
-            detalleTabla += "<td>" + student.email + "</td>";
-            detalleTabla += "<td>" + student.contrasena + "</td>";
-            detalleTabla += "<td>";
-            detalleTabla += "<a href='javascript:void(0);' class='btn btn-primary btn-sm' onclick='openEditModal(" + student.identificador + ");'>Editar</a> ";
-            detalleTabla += "<a href='javascript:void(0);' class='btn btn-danger btn-sm' onclick='deleteStudent(" + student.identificador + ");'>Eliminar</a>";
-            detalleTabla += "</td>";
-            detalleTabla += "</tr>";
-            tableBody.innerHTML += detalleTabla;
         });
     }
 
-    function deleteStudent(studentId) {
-        if (confirm("¿Estás seguro de que quieres eliminar este estudiante?")) {
-            fetch('/JSPDB/delete?id=' + studentId, {method: 'DELETE'})
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Error HTTP! Estado: ${response.status}`);
+    function submitStudentForm(url) {
+        let studentData = {
+            id: $("#id").val(),
+            name: $("#nombres").val(),
+            lastName: $("#apellidos").val(),
+            documentDNI: $("#dni").val(),
+            celphone: $("#celular").val(),
+            email: $("#email").val(),
+            careerCode: $("#carrera").val()
+        };
+
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: studentData,
+            success: function(data) {
+                studentsTable.ajax.reload(null, false);
+                $('#modalCRUD').modal('hide');
+                let message = (studentData.id === "") ? "Estudiante creado correctamente!" : "Estudiante editado correctamente!";
+                Swal.fire('¡Éxito!', message, 'success');
+            }
+        });
+    }
+
+    function filterByCareer() {
+        let careerCode = $('#careerFilter').val();
+        $.getJSON(GET_STUDENT_URL, function(data) {
+            let filteredData;
+            if (careerCode !== "") {
+                filteredData = data.filter(student => student.career.codigo === careerCode);
+            } else {
+                filteredData = data;
+            }
+            studentsTable.clear().rows.add(filteredData).draw();
+        });
+    }
+
+    // Eventos
+    $(document).on("click", "#btnCrear", function(){
+        $("#formEstudiantes").trigger("reset");
+        fillCareerSelect("");
+        $(".modal-title").text("Crear Estudiante");
+        $('#modalCRUD').modal('show');
+    });
+
+    $(document).on("click", ".btnEditar", function(){
+        let row = $(this).closest("tr");
+        let student = studentsTable.row(row).data();
+        $("#id").val(student.identificador);
+        $("#nombres").val(student.nombres);
+        $("#apellidos").val(student.apellidos);
+        $("#dni").val(student.dni);
+        $("#celular").val(student.celular);
+        $("#email").val(student.email);
+        fillCareerSelect(student.career.nombre);
+        $(".modal-title").text("Editar Estudiante");
+        $('#modalCRUD').modal('show');
+    });
+
+    $("#formEstudiantes").submit(function(e){
+        e.preventDefault();
+        let id = $("#id").val();
+        let url = (id === "") ? SAVE_STUDENT_URL : EDIT_STUDENT_URL;
+        submitStudentForm(url);
+    });
+
+    $(document).on("click", ".btnBorrar", function(){
+        let row = $(this);
+        let student = studentsTable.row(row.parents('tr')).data();
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "¡No podrás revertir esto!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, bórralo!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: DELETE_STUDENT_URL + '?id=' + student.identificador,
+                    type: "DELETE",
+                    success: function() {
+                        studentsTable.row(row.parents('tr')).remove().draw();
+                        Swal.fire('¡Eliminado!', '¡El estudiante ha sido eliminado.', 'success');
                     }
-                    const studentRow = document.getElementById('studentRow' + studentId);
-                    if (studentRow) {
-                        studentRow.remove();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error al eliminar estudiante:', error);
-                    alert("Error al eliminar el estudiante. Por favor, inténtalo de nuevo más tarde.");
                 });
-        }
-    }
-
-    function openEditModal(studentId) {
-        const student = STUDENTS.find(s => s.identificador === studentId);
-        if (student) {
-            document.getElementById('editId').value = student.identificador;
-            document.getElementById('editName').value = student.nombres;
-            document.getElementById('editLastName').value = student.apellidos;
-            document.getElementById('editDNI').value = student.dni;
-            document.getElementById('editCelphone').value = student.celular;
-            document.getElementById('editEmail').value = student.email;
-            document.getElementById('editPassword').value = student.contrasena;
-
-            var myModal = new bootstrap.Modal(document.getElementById('editModal'), {
-                keyboard: false
-            });
-            myModal.show();
-        } else {
-            console.error('No se encontró al estudiante con el ID:', studentId);
-        }
-    }
-
-    function initDataTable() {
-        $('#studentTable').DataTable({
-            paging: true,
-            searching: true,
-            pageLength: 10,
-            language: {
-                url: 'https://cdn.datatables.net/plug-ins/1.12.1/i18n/es-ES.json'
-            },
-            columns: [
-                { title: "Nombres" },
-                { title: "Apellidos" },
-                { title: "DNI" },
-                { title: "Celular" },
-                { title: "Correo electrónico" },
-                { title: "Contraseña" },
-                { title: "Acciones" }
-            ]
+            }
         });
-    }
+    });
+
+    $('#careerFilter').change(function() {
+        filterByCareer();
+    });
+
+    fillCareerSelect("");
 </script>
 </body>
 </html>

@@ -14,7 +14,7 @@ import com.google.gson.Gson;
 import com.personal.jspdb.model.Student;
 import com.personal.jspdb.service.StudentService;
 
-@WebServlet("/list")
+@WebServlet("/list/students")
 public class StudentListServlets extends HttpServlet {
 	
 	private StudentService service;
@@ -33,7 +33,6 @@ public class StudentListServlets extends HttpServlet {
 			resp.setContentType("application/json");
 			resp.setCharacterEncoding("UTF-8");
 			resp.getWriter().write(list);
-			resp.getWriter().close();
 		} catch (Exception e) {
 			e.printStackTrace();
 			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error retrieving student data");

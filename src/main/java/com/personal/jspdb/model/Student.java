@@ -11,5 +11,5 @@ public class Student {
 	private String dni;
 	private String celular;
 	private String email;
-	private String contrasena;
+	private Career career;
 }
